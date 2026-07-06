@@ -5,7 +5,25 @@ import Foundation
 @Suite("NotificationEngine deduplication")
 struct NotificationEngineTests {
 
-    @Test("does not fire twice for same status transition")
+    @Test("fires notification on running → permissionRequest transition")
+    func firesOnPermissionRequest() async {
+        let notifAdapter = SpyNotificationAdapter()
+        let settingsRepo = StubSettingsRepository()
+        let sessionRepo = InMemorySessionRepository()
+        let engine = NotificationEngine(
+            notificationPort: notifAdapter,
+            settingsRepository: settingsRepo,
+            sessionRepository: sessionRepo
+        )
+
+        let session = makeSession(id: "s1", status: .permissionRequest)
+        await sessionRepo.save(session)
+        await engine.process(session: session, previousStatus: .running)
+
+        #expect(notifAdapter.deliverCount == 1)
+    }
+
+    @Test("does not fire twice for same status")
     func noDuplicateNotification() async {
         let notifAdapter = SpyNotificationAdapter()
         let settingsRepo = StubSettingsRepository()
@@ -16,19 +34,16 @@ struct NotificationEngineTests {
             sessionRepository: sessionRepo
         )
 
-        let session = makeSession(id: "s1", status: .waiting)
+        let session = makeSession(id: "s1", status: .permissionRequest)
         await sessionRepo.save(session)
-
-        // First time: running → waiting
         await engine.process(session: session, previousStatus: .running)
-        // Second time: waiting → waiting (same, should not fire)
-        await engine.process(session: session, previousStatus: .waiting)
+        await engine.process(session: session, previousStatus: .permissionRequest)
 
         #expect(notifAdapter.deliverCount == 1)
     }
 
-    @Test("fires again after status resets to running then waiting")
-    func firesAfterReset() async {
+    @Test("does not fire for idle status")
+    func doesNotFireForIdle() async {
         let notifAdapter = SpyNotificationAdapter()
         let settingsRepo = StubSettingsRepository()
         let sessionRepo = InMemorySessionRepository()
@@ -38,22 +53,14 @@ struct NotificationEngineTests {
             sessionRepository: sessionRepo
         )
 
-        let waiting = makeSession(id: "s1", status: .waiting)
-        await sessionRepo.save(waiting)
-        await engine.process(session: waiting, previousStatus: .running) // fires
+        let session = makeSession(id: "s1", status: .idle)
+        await sessionRepo.save(session)
+        await engine.process(session: session, previousStatus: .running)
 
-        let running = makeSession(id: "s1", status: .running)
-        await sessionRepo.save(running)
-        await engine.process(session: running, previousStatus: .waiting) // does not fire
-
-        let waiting2 = makeSession(id: "s1", status: .waiting)
-        await sessionRepo.save(waiting2)
-        await engine.process(session: waiting2, previousStatus: .running) // fires again
-
-        #expect(notifAdapter.deliverCount == 2)
+        #expect(notifAdapter.deliverCount == 0)
     }
 
-    @Test("does not fire when notifications disabled in settings")
+    @Test("does not fire when notifications disabled")
     func respectsNotificationsDisabled() async {
         let notifAdapter = SpyNotificationAdapter()
         let settingsRepo = StubSettingsRepository(notificationsEnabled: false)
@@ -64,7 +71,7 @@ struct NotificationEngineTests {
             sessionRepository: sessionRepo
         )
 
-        let session = makeSession(id: "s1", status: .waiting)
+        let session = makeSession(id: "s1", status: .permissionRequest)
         await sessionRepo.save(session)
         await engine.process(session: session, previousStatus: .running)
 
@@ -78,8 +85,6 @@ private func makeSession(id: String, status: SessionStatus) -> Session {
     Session(id: id, cwd: "/tmp", projectName: "test", startedAt: .now,
             lastEventAt: .now, status: status, title: "test", providerName: "claude")
 }
-
-// MARK: - Spies / Stubs
 
 private actor SpyNotificationAdapter: NotificationPort {
     private(set) var deliverCount = 0

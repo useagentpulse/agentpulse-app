@@ -10,16 +10,22 @@ struct SessionStatusTests {
         #expect(status == .permissionRequest)
     }
 
-    @Test("idle maps to waiting")
+    @Test("idle maps to idle")
     func idleMapping() {
         let status = SessionStatus(notificationType: "idle")
-        #expect(status == .waiting)
+        #expect(status == .idle)
     }
 
     @Test("run_start maps to running")
     func runStartMapping() {
         let status = SessionStatus(notificationType: "run_start")
         #expect(status == .running)
+    }
+
+    @Test("stop maps to idle")
+    func stopMapping() {
+        let status = SessionStatus(notificationType: "stop")
+        #expect(status == .idle)
     }
 
     @Test("run_end maps to finished")
@@ -34,11 +40,11 @@ struct SessionStatusTests {
         #expect(status == .running)
     }
 
-    @Test("waiting and permissionRequest trigger notifications")
+    @Test("only permissionRequest triggers notification")
     func notificationTriggers() {
-        #expect(SessionStatus.waiting.triggersNotification == true)
         #expect(SessionStatus.permissionRequest.triggersNotification == true)
         #expect(SessionStatus.running.triggersNotification == false)
+        #expect(SessionStatus.idle.triggersNotification == false)
         #expect(SessionStatus.finished.triggersNotification == false)
     }
 }
@@ -47,8 +53,9 @@ private extension SessionStatus {
     init(notificationType: String) {
         switch notificationType {
         case "permission_prompt":        self = .permissionRequest
-        case "idle", "waiting":          self = .waiting
+        case "idle", "waiting":          self = .idle
         case "run_start", "run_resume":  self = .running
+        case "stop":                     self = .idle
         case "run_end", "done":          self = .finished
         default:                         self = .running
         }
