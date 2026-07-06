@@ -1,0 +1,103 @@
+name: AgentPulse
+options:
+  bundleIdPrefix: com.agentpulse
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  AgentPulse:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: AgentPulse
+        excludes:
+          - "**/*.md"
+    resources:
+      - AgentPulse/Resources/Info.plist
+    info:
+      path: AgentPulse/Resources/Info.plist
+      properties:
+        LSUIElement: true
+        NSUserNotificationAlertStyle: alert
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.agentpulse.AgentPulse
+        PRODUCT_NAME: AgentPulse
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        OTHER_SWIFT_FLAGS: ""
+        SWIFT_STRICT_CONCURRENCY: complete
+      Debug:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+    dependencies:
+      - target: AgentPulseHook
+        embed: true
+        codeSign: true
+    postBuildScripts:
+      - name: Copy to /Applications
+        script: |
+          if [ "${CONFIGURATION}" = "Debug" ]; then
+            cp -R "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app" "/Applications/${PRODUCT_NAME}.app"
+            echo "Copied ${PRODUCT_NAME}.app to /Applications"
+          fi
+        basedOnDependencyAnalysis: false
+
+  AgentPulseHook:
+    type: tool
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: AgentPulseHook/Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.agentpulse.AgentPulseHook
+        PRODUCT_NAME: agentpulse-hook
+        SWIFT_STRICT_CONCURRENCY: complete
+
+  AgentPulseTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: AgentPulseTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.agentpulse.AgentPulseTests
+    dependencies:
+      - target: AgentPulse
+    scheme:
+      testTargets:
+        - AgentPulseTests
+
+schemes:
+  AgentPulse:
+    build:
+      targets:
+        AgentPulse: all
+        AgentPulseHook: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - AgentPulseTests
+    profile:
+      config: Release
+    archive:
+      config: Release
