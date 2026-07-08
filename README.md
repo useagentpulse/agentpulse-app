@@ -6,6 +6,7 @@ macOS menu bar app that monitors Claude Code (and future AI agent) sessions and 
 
 ```bash
 brew tap useagentpulse/agentpulse
+brew trust useagentpulse/agentpulse
 brew install --cask agentpulse
 ```
 
