@@ -21,11 +21,9 @@ public final class UNNotificationAdapter: NotificationPort, @unchecked Sendable 
             "status": request.status.rawValue
         ]
 
-        // Attach app icon as notification icon
-        if let iconURL = Bundle.main.url(forResource: "icon_128x128", withExtension: "png",
-                                          subdirectory: "Assets.xcassets/AppIcon.appiconset"),
-           let attachment = try? UNNotificationAttachment(identifier: "appIcon",
-                                                          url: iconURL, options: nil) {
+        // Attach app icon — load from bundle resource (not xcassets)
+        if let iconURL = Bundle.main.url(forResource: "AppIcon-Notification", withExtension: "png"),
+           let attachment = try? UNNotificationAttachment(identifier: "appIcon", url: iconURL, options: nil) {
             content.attachments = [attachment]
         }
 
