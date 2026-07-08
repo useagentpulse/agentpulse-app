@@ -290,6 +290,7 @@ a { color: inherit; text-decoration: none; }
 }
 .feature-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
 .feature-card--large { grid-column: span 2; }
+.feature-card--wide  { grid-column: span 3; }
 .feature-icon {
   width: 44px; height: 44px; border-radius: var(--radius-sm);
   background: rgba(217,119,87,0.1);
@@ -369,30 +370,26 @@ a { color: inherit; text-decoration: none; }
   font-size: 13px; color: var(--text-3); flex-wrap: wrap;
 }
 
-/* ── STATUS STATES ────────────────────────────────────────── */
-.states { padding: 100px 0; background: var(--bg-2); }
-.states-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+/* ── STATES STRIP ─────────────────────────────────────────── */
+.states { padding: 48px 0; background: var(--bg-2); }
+.states-strip {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
-.state-card {
-  background: var(--bg-3);
+.states-label { font-size: 13px; color: var(--text-3); margin-right: 4px; }
+.state-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: rgba(255,255,255,0.04);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-align: center;
-  transition: border-color 0.2s;
+  font-size: 13px; color: var(--text-2);
 }
-.state-card:hover { border-color: var(--border-2); }
-.state-card--highlight { border-color: rgba(255,69,58,0.3); background: rgba(255,69,58,0.05); }
-.state-icon {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  background: rgba(255,255,255,0.06);
-  border-radius: var(--radius-sm);
-  padding: 12px; margin-bottom: 14px;
+.state-pill svg { opacity: 0.6; }
+.state-pill--alert { border-color: rgba(255,69,58,0.3); background: rgba(255,69,58,0.06); color: var(--text); }
+.state-pill-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
 }
-.state-dot--pulse { animation: pulse-red 0.5s ease-in-out infinite alternate; }
-.state-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-.state-desc { font-size: 13px; color: var(--text-2); }
+.state-pill-dot--pulse { animation: pulse-red 0.5s ease-in-out infinite alternate; }
+.feature-card--wide { grid-column: span 3; }
 
 /* ── OPEN SOURCE ──────────────────────────────────────────── */
 .opensource { padding: 100px 0; }
