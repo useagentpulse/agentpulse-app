@@ -88,11 +88,7 @@ public final class AppContainer {
 
     public func bootstrap() async {
         // 1. Set notification delegate first so action responses are received
-        let handler = NotificationResponseHandler(
-            focusUseCase: focusSessionUseCase,
-            sessionRepository: sessionRepository,
-            settingsRepository: settingsRepository
-        )
+        let handler = NotificationResponseHandler(focusUseCase: focusSessionUseCase)
         notificationResponseHandler = handler
         UNUserNotificationCenter.current().delegate = handler
 

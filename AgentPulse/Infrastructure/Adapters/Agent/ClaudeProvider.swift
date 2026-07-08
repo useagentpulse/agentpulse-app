@@ -49,6 +49,5 @@ public final class ClaudeProvider: AgentProviderPort, @unchecked Sendable {
         case "UserPromptSubmit":  return "run_start"
         case "Stop":              return "stop"
         default:                  return explicit.isEmpty ? "run_start" : explicit
-        }
-    }
+        }    }
 }

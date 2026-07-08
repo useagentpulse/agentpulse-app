@@ -3,44 +3,57 @@ import SwiftUI
 @main
 struct AgentPulseApp: App {
     @State private var container = AppContainer.shared
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarContentView(viewModel: container.sessionViewModel)
+            MenuBarContentView(viewModel: container.sessionViewModel, openWindow: openWindow)
         } label: {
-            MenuBarLabel(status: container.sessionViewModel.menuBarStatus)
+            MenuBarIcon(status: container.sessionViewModel.menuBarStatus)
         }
         .menuBarExtraStyle(.window)
 
-        Settings {
+        Window("Preferences", id: "preferences") {
             PreferencesView(viewModel: container.sessionViewModel)
         }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
     }
 
     init() {
-        // bootstrap() is @MainActor — dispatch from the nonisolated init
         Task { @MainActor in
             await AppContainer.shared.bootstrap()
         }
     }
 }
 
-/// The icon shown in the system menu bar.
-struct MenuBarLabel: View {
+// MARK: - Menu Bar Icon
+
+/// Renders the pulse waveform + status dot using SwiftUI Canvas.
+/// Geometry is fixed; only the dot color changes per status.
+struct MenuBarIcon: View {
     let status: MenuBarStatus
 
     var body: some View {
         HStack(spacing: 3) {
+            Image(systemName: "waveform.path.ecg")
+                .font(.system(size: 14, weight: .bold))
+            // Use symbolRenderingMode(.palette) to force actual color rendering
+            // in MenuBarExtra which otherwise applies template (monochrome) mode
             Image(systemName: "circle.fill")
-                .foregroundStyle(iconColor)
-                .font(.system(size: 10))
+                .font(.system(size: 8))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(dotColor, dotColor)
         }
+        .fixedSize()
     }
 
-    private var iconColor: Color {
+    private var dotColor: Color {
         switch status {
-        case .idle:       return .green
-        case .permission: return .red
+        case .idle:       return Color(red: 0.69, green: 0.69, blue: 0.69)
+        case .running:    return Color(red: 0.04, green: 0.52, blue: 1.00)
+        case .waiting:    return Color(red: 1.00, green: 0.62, blue: 0.04)
+        case .permission: return Color(red: 1.00, green: 0.27, blue: 0.23)
         }
     }
 }

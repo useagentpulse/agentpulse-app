@@ -34,10 +34,16 @@ public actor ProcessHookEventUseCase {
         var terminalName = existing?.terminalName
         var terminalInfo = existing?.terminalInfo
         if terminalName == nil, let hookPPID = event.rawPayload["_hook_ppid"] as? Int {
-            let detected = terminalDetector.detect(fromPID: Int32(hookPPID))
+            let tty = event.rawPayload["_hook_tty"] as? String
+            let detected = terminalDetector.detect(fromPID: Int32(hookPPID), tty: tty)
             terminalName = detected.terminalName
             terminalInfo = detected.terminalInfo
         }
+
+        // Prefer the explicit claude PID; fall back to hook parent
+        let rawPID = event.rawPayload["_claude_pid"] as? Int
+                  ?? event.rawPayload["_hook_ppid"] as? Int
+        let claudePID = rawPID.map { Int32($0) }
 
         return Session(
             id: event.sessionID,
@@ -51,7 +57,8 @@ public actor ProcessHookEventUseCase {
             terminalName: terminalName,
             transcriptPath: transcriptPath ?? existing?.transcriptPath,
             title: event.title.isEmpty ? projectName : event.title,
-            providerName: event.providerName
+            providerName: event.providerName,
+            claudePID: claudePID ?? existing?.claudePID
         )
     }
 
@@ -66,7 +73,7 @@ private extension SessionStatus {
     init(notificationType: String) {
         switch notificationType {
         case "permission_prompt":        self = .permissionRequest
-        case "idle", "waiting":          self = .idle
+        case "idle", "idle_prompt":      self = .idle
         case "run_start", "run_resume":  self = .running
         case "stop":                     self = .idle
         case "run_end", "done":          self = .finished

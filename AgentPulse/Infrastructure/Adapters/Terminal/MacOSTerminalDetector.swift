@@ -21,13 +21,13 @@ public final class MacOSTerminalDetector: TerminalDetectorPort, @unchecked Senda
     public init() {}
 
     /// Resolves a human-readable terminal/IDE name and TerminalInfo from a starting PID.
-    public func detect(fromPID pid: Int32) -> (terminalName: String?, terminalInfo: TerminalInfo?) {
+    public func detect(fromPID pid: Int32, tty: String? = nil) -> (terminalName: String?, terminalInfo: TerminalInfo?) {
         var current = pid
         for _ in 0..<15 {
             if let bundleID = bundleID(forPID: current) {
                 let name = Self.knownApps[bundleID]
                 let info = TerminalInfo(pid: current, ppid: parentPID(of: current),
-                                        tty: nil, bundleID: bundleID, windowID: nil)
+                                        tty: tty, bundleID: bundleID, windowID: nil)
                 return (name ?? appName(forBundleID: bundleID), info)
             }
             let parent = parentPID(of: current)

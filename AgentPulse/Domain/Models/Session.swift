@@ -14,6 +14,8 @@ public struct Session: Identifiable, Sendable {
     public var transcriptPath: String?
     public var title: String
     public var providerName: String
+    /// PID of the Claude process — used to detect when the session is terminated.
+    public var claudePID: Int32?
 
     public init(
         id: SessionID,
@@ -27,7 +29,8 @@ public struct Session: Identifiable, Sendable {
         terminalName: String? = nil,
         transcriptPath: String? = nil,
         title: String,
-        providerName: String
+        providerName: String,
+        claudePID: Int32? = nil
     ) {
         self.id = id
         self.cwd = cwd
@@ -41,6 +44,7 @@ public struct Session: Identifiable, Sendable {
         self.transcriptPath = transcriptPath
         self.title = title
         self.providerName = providerName
+        self.claudePID = claudePID
     }
 
     /// Whether this session requires immediate user attention.

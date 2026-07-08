@@ -23,6 +23,13 @@ public actor NotificationEngine {
         guard session.status.triggersNotification else { return }
         guard session.status != previousStatus else { return } // no duplicate
 
+        let title: String
+        if let terminal = session.terminalName {
+            title = "Claude in \(terminal) needs your attention"
+        } else {
+            title = "Claude needs your attention"
+        }
+
         let body: String
         switch session.status {
         case .permissionRequest: body = "\(session.projectName) / Input required"
@@ -31,7 +38,7 @@ public actor NotificationEngine {
 
         let request = NotificationRequest(
             sessionID: session.id,
-            title: "Claude needs your attention",
+            title: title,
             body: body,
             status: session.status,
             projectName: session.projectName

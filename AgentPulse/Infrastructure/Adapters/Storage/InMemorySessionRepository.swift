@@ -29,7 +29,8 @@ public actor InMemorySessionRepository: SessionRepositoryPort {
                 terminalName: session.terminalName ?? existing.terminalName,
                 transcriptPath: session.transcriptPath ?? existing.transcriptPath,
                 title: session.title,
-                providerName: session.providerName
+                providerName: session.providerName,
+                claudePID: session.claudePID ?? existing.claudePID
             )
         } else {
             sessions[session.id] = session

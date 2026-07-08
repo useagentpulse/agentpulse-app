@@ -1,7 +1,6 @@
 import Foundation
 import Observation
 
-/// Observable view model — the single source of truth for all SwiftUI views.
 @MainActor
 @Observable
 public final class SessionViewModel {
@@ -37,9 +36,7 @@ public final class SessionViewModel {
         Task { self.settings = await settingsRepository.load() }
     }
 
-    public func stop() {
-        refreshTask?.cancel()
-    }
+    public func stop() { refreshTask?.cancel() }
 
     public func focusSession(_ session: Session) {
         Task { try? await focusUseCase.execute(sessionID: session.id) }
@@ -54,11 +51,15 @@ public final class SessionViewModel {
 
     private func refresh() async {
         let all = await sessionRepository.all()
-        // Only drop sessions that have gone stale — no event for >5 min (force-closed terminal).
-        // Never drop based on status alone; the session row should stay until the terminal is gone.
-        let cutoff = Date().addingTimeInterval(-300)
-        sessions = all.filter { $0.lastEventAt > cutoff }
+        sessions = all.filter { isAlive($0) }
         menuBarStatus = MenuBarStatus(from: sessions)
+    }
+
+    private func isAlive(_ session: Session) -> Bool {
+        if let pid = session.claudePID {
+            return kill(pid, 0) == 0
+        }
+        return session.lastEventAt > Date().addingTimeInterval(-1800)
     }
 
     private func updateLaunchAtLogin() {
@@ -72,13 +73,23 @@ public final class SessionViewModel {
     }
 }
 
-public enum MenuBarStatus {
-    case idle       // green
-    case permission // red
+// MARK: - Menu Bar Status
 
+public enum MenuBarStatus {
+    case idle        // gray dot  — no active sessions
+    case running     // blue dot  — sessions actively working
+    case waiting     // orange dot — session waiting for input
+    case permission  // red dot   — session blocked on approval
+
+    /// Priority: permission > waiting > running > idle
     init(from sessions: [Session]) {
         if sessions.contains(where: { $0.status == .permissionRequest }) {
             self = .permission
+        } else if sessions.contains(where: { $0.status == .idle && $0.lastEventAt > Date().addingTimeInterval(-300) }) {
+            // recently went idle = likely waiting for next input
+            self = .waiting
+        } else if sessions.contains(where: { $0.status == .running }) {
+            self = .running
         } else {
             self = .idle
         }
