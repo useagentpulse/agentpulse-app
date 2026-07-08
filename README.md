@@ -1,62 +1,73 @@
 # Agent Pulse
 
-macOS menu bar app that monitors Claude Code sessions and notifies you the moment any session needs your attention.
+macOS menu bar app that monitors Claude Code (and future AI agent) sessions and notifies you the moment any session needs your attention.
+
+## Install
+
+```bash
+brew tap useagentpulse/agentpulse
+brew install --cask agentpulse
+```
+
+Or download the latest `.dmg` from [Releases](https://github.com/useagentpulse/agentpulse-app/releases).
+
+## How it works
+
+1. On first launch, Agent Pulse installs hooks into `~/.claude/settings.json`
+2. When Claude needs your attention, it invokes `agentpulse-hook` (bundled CLI)
+3. The hook forwards the event to Agent Pulse over a Unix Domain Socket
+4. Agent Pulse updates the session in the menu bar and fires a macOS notification
+5. Click the notification or the session row to jump to the exact terminal window
 
 ## Requirements
 
 - macOS 14+
-- Xcode 16+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+- Claude Code (`claude` CLI)
 
-## Build
+## Build from source
 
 ```bash
 brew install xcodegen
-cd "Agent Pulse"
+git clone https://github.com/useagentpulse/agentpulse-app.git
+cd agentpulse-app
 xcodegen generate
 open AgentPulse.xcodeproj
 ```
 
-Then press **⌘R** in Xcode to run.
+Press **⌘R** to run.
 
 ## Architecture
 
 Hexagonal Architecture (Ports & Adapters) with DDD layers:
 
-```
+```text
 Domain          — pure Swift models + protocol ports (no platform imports)
-Application     — use cases: ProcessHookEvent, FocusSession, InstallHooks, PurgeExpiredSessions
-                  services: NotificationEngine, HookEventDispatcher
-Infrastructure  — macOS adapters: ClaudeProvider, ClaudeHookInstaller, UnixSocketServer,
-                  UNNotificationAdapter, MacOSTerminalFocuser, SMAppServiceLaunchAgent
-Presentation    — SwiftUI: MenuBarContentView, SessionRowView, PreferencesView, SessionViewModel
-App             — AgentPulseApp (@main), AppContainer (DI), NotificationResponseHandler
+Application     — use cases + services (NotificationEngine, HookEventDispatcher)
+Infrastructure  — adapters: ClaudeProvider, UnixSocketServer, UNNotifications,
+                  MacOSTerminalFocuser, MacOSTerminalDetector, LaunchAgent
+Presentation    — SwiftUI: MenuBarExtra, SessionRowView, PreferencesView
+App             — AgentPulseApp (@main), AppContainer (DI)
+AgentPulseHook  — fire-and-forget CLI invoked by Claude hooks
 ```
 
 ### Adding a new agent provider (Gemini, Codex, …)
 
-1. Implement `AgentProviderPort` in a new file under `Infrastructure/Adapters/Agent/`.
-2. Implement `HookInstallerPort` for that provider's config file format.
-3. Register the provider in `AppContainer.providers`.
+1. Implement `AgentProviderPort` in `Infrastructure/Adapters/Agent/`
+2. Implement `HookInstallerPort` for that provider's config format
+3. Register in `AppContainer.providers`
 
-No other code changes required.
-
-## How it works
-
-1. On first launch, `ClaudeHookInstaller` merges a `Notification` hook into `~/.claude/settings.json`.
-2. When Claude fires the hook, it invokes `agentpulse-hook` (bundled CLI tool).
-3. `agentpulse-hook` reads stdin and writes the payload to the Unix Domain Socket — then exits immediately (zero latency for Claude).
-4. The main app receives the event, updates the session registry, and fires a macOS notification if the session transitions to `Waiting` or `PermissionRequest`.
-5. Clicking the notification activates the correct terminal window.
-
-## Tests
-
-```bash
-xcodebuild test -scheme AgentPulse -destination "platform=macOS"
-```
+No other changes needed.
 
 ## Privacy
 
-- 100% local. No network calls except `127.0.0.1` localhost socket.
-- No telemetry. No analytics. No data upload.
-- Only session metadata is stored — never prompt text or Claude responses.
+- 100% local. No network except `localhost` Unix socket.
+- No telemetry, no analytics, no data upload.
+- Only session metadata is stored — never prompt text or AI responses.
+
+## Contributing
+
+PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT
