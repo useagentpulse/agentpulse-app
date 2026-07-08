@@ -9,6 +9,7 @@
   <meta property="og:description" content="Never miss when your AI coding agent needs you." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://useagentpulse.github.io/agentpulse-app" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -95,11 +96,11 @@
           <div class="session-left">
             <div class="status-dot status-dot--red"></div>
             <div class="session-info">
-              <div class="session-name">smcore-ai-service</div>
+              <div class="session-name">backend-api</div>
               <div class="session-meta">
                 <span class="provider-badge">C</span>
                 <span class="terminal-name">VS Code</span>
-                <span class="session-path">/Users/dev/smcore…</span>
+                <span class="session-path">/Users/dev/backend…</span>
               </div>
             </div>
           </div>
@@ -163,12 +164,12 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
         </div>
         <h3>Instant Notifications</h3>
-        <p>Fires within 1 second of Claude needing attention. Never spam — one notification per state change.</p>
+        <p>Notifies you as soon as Claude needs attention. Never spam — one notification per state change.</p>
         <div class="feature-notif">
           <div class="notif-icon">⚡</div>
           <div class="notif-body">
             <div class="notif-title">Claude in VS Code needs your attention</div>
-            <div class="notif-sub">smcore-ai-service · Input required</div>
+            <div class="notif-sub">backend-api · Input required</div>
           </div>
         </div>
       </div>
@@ -251,7 +252,7 @@
     <div class="os-text">
       <div class="section-label">Open Source</div>
       <h2 class="section-title">Built in public.<br/>Extensible by design.</h2>
-      <p>Agent Pulse is MIT licensed. The architecture makes adding new AI providers trivial — implement one protocol and register it.</p>
+      <p>The architecture makes adding new AI providers trivial — implement one protocol and register it.</p>
       <div class="providers-roadmap">
         <div class="provider provider--done">Claude Code ✓</div>
         <div class="provider provider--soon">Gemini CLI</div>
@@ -267,10 +268,10 @@
       <div class="code-window">
         <div class="code-window-bar">
           <span></span><span></span><span></span>
-          <div class="code-window-title">GeminiProvider.swift</div>
+          <div class="code-window-title">CustomProvider.swift</div>
         </div>
-        <pre class="code-content"><span class="code-comment">// Adding Gemini support:</span>
-<span class="code-keyword">final class</span> <span class="code-type">GeminiProvider</span>: <span class="code-type">AgentProviderPort</span> {
+        <pre class="code-content"><span class="code-comment">// Adding any agent CLI provider:</span>
+<span class="code-keyword">final class</span> <span class="code-type">MyAgentProvider</span>: <span class="code-type">AgentProviderPort</span> {
   <span class="code-keyword">let</span> name = <span class="code-string">"gemini"</span>
   <span class="code-keyword">let</span> badgeLetter = <span class="code-string">"G"</span>
   <span class="code-keyword">let</span> brandColor = (<span class="code-num">0.26</span>, <span class="code-num">0.52</span>, <span class="code-num">0.96</span>)
@@ -278,12 +279,12 @@
 
   <span class="code-keyword">func</span> <span class="code-fn">parse</span>(rawPayload: [<span class="code-type">String</span>: <span class="code-keyword">any</span> <span class="code-type">Sendable</span>],
               receivedAt: <span class="code-type">Date</span>) -> <span class="code-type">HookEvent</span>? {
-    <span class="code-comment">// Parse Gemini's hook format</span>
+    <span class="code-comment">// Parse your agent's hook payload</span>
   }
 }
 
 <span class="code-comment">// Register in AppContainer — done.</span>
-providers = [claudeProvider, <span class="code-type">GeminiProvider</span>()]</pre>
+providers = [claudeProvider, <span class="code-type">MyAgentProvider</span>()]</pre>
       </div>
     </div>
   </div>
@@ -300,7 +301,7 @@ providers = [claudeProvider, <span class="code-type">GeminiProvider</span>()]</p
       <a href="https://github.com/useagentpulse/agentpulse-app" target="_blank">GitHub</a>
       <a href="changelog.html">Changelog</a>
       <a href="https://github.com/useagentpulse/agentpulse-app/issues" target="_blank">Issues</a>
-      <a href="https://github.com/useagentpulse/agentpulse-app/blob/main/LICENSE" target="_blank">MIT License</a>
+      <a href="https://github.com/useagentpulse/agentpulse-app/blob/main/LICENSE" target="_blank">License</a>
     </div>
     <div class="footer-copy">Made for the agentic era.</div>
   </div>

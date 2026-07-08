@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Changelog — Agent Pulse</title>
   <meta name="description" content="Agent Pulse release history and changelog." />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
@@ -44,7 +45,7 @@
         <div class="changelog-meta">
           <span class="changelog-version">v1.0.0</span>
           <span class="changelog-tag changelog-tag--latest">Latest</span>
-          <span class="changelog-date">July 2025</span>
+          <span class="changelog-date">July 2026</span>
         </div>
         <h2 class="changelog-title">Initial Release</h2>
         <div class="changelog-body">
@@ -55,13 +56,13 @@
               <li>Instant macOS notifications when sessions need attention</li>
               <li>Click notification to focus exact terminal window/tab (Terminal.app, iTerm2)</li>
               <li>Terminal and IDE detection: Terminal.app, iTerm2, VS Code, Warp, Ghostty, IntelliJ</li>
-              <li>Four status states: Idle (grey), Running (blue), Waiting (orange), Input Required (red)</li>
-              <li>Provider badge showing agent identity (Claude = terracotta C)</li>
+              <li>Four status states: Idle (grey), Running (blue), Waiting (amber), Input Required (red)</li>
+              <li>Provider badge showing agent identity (e.g. Claude = C)</li>
               <li>Auto-installs Claude hooks on first launch — zero manual config</li>
               <li>Hooks registered: <code>Notification</code>, <code>PreToolUse</code>, <code>PostToolUse</code>, <code>Stop</code>, <code>UserPromptSubmit</code></li>
               <li>Session auto-cleanup when Claude process terminates (PID liveness check)</li>
               <li>Preferences: launch at login, notifications, sound, terminal auto-focus, retention</li>
-              <li>Extensible architecture — adding Gemini/Codex requires one new file</li>
+              <li>Extensible architecture — adding any new agent CLI provider requires one new file</li>
             </ul>
           </div>
           <div class="changelog-section">
@@ -70,7 +71,7 @@
               <li>Hexagonal Architecture (Ports & Adapters) with DDD layers</li>
               <li>Swift 6 strict concurrency throughout</li>
               <li>Unix Domain Socket IPC (POSIX, not NWListener)</li>
-              <li>Fire-and-forget <code>agentpulse-hook</code> CLI — zero latency for Claude</li>
+              <li>Fire-and-forget <code>agentpulse-hook</code> CLI — minimal overhead for the agent process</li>
             </ul>
           </div>
         </div>
@@ -130,7 +131,7 @@
       <a href="https://github.com/useagentpulse/agentpulse-app" target="_blank">GitHub</a>
       <a href="changelog.html">Changelog</a>
       <a href="https://github.com/useagentpulse/agentpulse-app/issues" target="_blank">Issues</a>
-      <a href="https://github.com/useagentpulse/agentpulse-app/blob/main/LICENSE" target="_blank">MIT License</a>
+      <a href="https://github.com/useagentpulse/agentpulse-app/blob/main/LICENSE" target="_blank">License</a>
     </div>
     <div class="footer-copy">Made for the agentic era.</div>
   </div>
