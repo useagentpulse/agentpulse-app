@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -scheme AgentPulse \
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            -destination "platform=macOS" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Locate built app
+        id: app
+        run: |
+          APP=$(find build/DerivedData -name "AgentPulse.app" -not -path "*dSYM*" | head -1)
+          echo "path=$APP" >> $GITHUB_OUTPUT
+          echo "Found: $APP"
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          create-dmg \
+            --volname "Agent Pulse $VERSION" \
+            --window-size 540 380 \
+            --icon-size 128 \
+            --icon "AgentPulse.app" 130 190 \
+            --app-drop-link 400 190 \
+            "AgentPulse-$VERSION.dmg" \
+            "${{ steps.app.outputs.path }}"
+          echo "DMG_PATH=AgentPulse-$VERSION.dmg" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Compute SHA256
+        run: |
+          SHA=$(shasum -a 256 "$DMG_PATH" | awk '{print $1}')
+          echo "SHA256=$SHA" >> $GITHUB_ENV
+          echo "SHA256: $SHA"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_PATH }}
+          name: "Agent Pulse v${{ env.VERSION }}"
+          body: |
+            ## Agent Pulse v${{ env.VERSION }}
+
+            ### Install
+            ```bash
+            brew tap useagentpulse/agentpulse
+            brew trust useagentpulse/agentpulse
+            brew install --cask agentpulse
+            ```
+
+            Or download `AgentPulse-${{ env.VERSION }}.dmg` below.
+
+            > If macOS blocks the app: System Settings → Privacy & Security → Open Anyway
+            > Or run: `xattr -cr /Applications/AgentPulse.app`
+
+            **SHA256:** `${{ env.SHA256 }}`
+
+      - name: Update Homebrew cask
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          git clone https://x-access-token:${GH_TOKEN}@github.com/useagentpulse/homebrew-agentpulse.git tap
+          sed -i '' "s/version \".*\"/version \"$VERSION\"/" tap/Casks/agentpulse.rb || \
+          sed -i    "s/version \".*\"/version \"$VERSION\"/" tap/Casks/agentpulse.rb
+          sed -i '' "s/sha256 \".*\"/sha256 \"$SHA256\"/" tap/Casks/agentpulse.rb || \
+          sed -i    "s/sha256 \".*\"/sha256 \"$SHA256\"/" tap/Casks/agentpulse.rb
+          cd tap
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add Casks/agentpulse.rb
+          git commit -m "Update agentpulse cask to v$VERSION"
+          git push
