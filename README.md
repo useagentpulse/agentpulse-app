@@ -69,3 +69,7 @@ No other changes needed.
 
 PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+
+## License
+
+MIT — see [LICENSE](LICENSE)
