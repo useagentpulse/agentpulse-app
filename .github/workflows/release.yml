@@ -20,6 +20,16 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Set version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # Patch project.yml with the tag version
+          sed -i "s/MARKETING_VERSION: \".*\"/MARKETING_VERSION: \"$VERSION\"/" project.yml
+          # Increment build number using run number
+          sed -i "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"$GITHUB_RUN_NUMBER\"/" project.yml
+          echo "Building version $VERSION (build $GITHUB_RUN_NUMBER)"
+
       - name: Generate Xcode project
         run: xcodegen generate
 
@@ -95,10 +105,8 @@ jobs:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           git clone https://x-access-token:${GH_TOKEN}@github.com/useagentpulse/homebrew-agentpulse.git tap
-          sed -i '' "s/version \".*\"/version \"$VERSION\"/" tap/Casks/agentpulse.rb || \
-          sed -i    "s/version \".*\"/version \"$VERSION\"/" tap/Casks/agentpulse.rb
-          sed -i '' "s/sha256 \".*\"/sha256 \"$SHA256\"/" tap/Casks/agentpulse.rb || \
-          sed -i    "s/sha256 \".*\"/sha256 \"$SHA256\"/" tap/Casks/agentpulse.rb
+          sed -i "s/version \".*\"/version \"$VERSION\"/" tap/Casks/agentpulse.rb
+          sed -i "s/sha256 \".*\"/sha256 \"$SHA256\"/" tap/Casks/agentpulse.rb
           cd tap
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
